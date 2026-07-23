@@ -15,10 +15,10 @@ const Farmer = require('../models/Farmer');
 
 async function migrate() {
   try {
-    console.log('\n🔧 AeroGuard Database Migration: Populate farmerEmail\n');
+    console.log('\n🔧 AeroVision Database Migration: Populate farmerEmail\n');
     console.log('Connecting to MongoDB...');
     
-    await mongoose.connect(process.env.MONGO_URI || 'mongodb://localhost:27017/aeroguard');
+    await mongoose.connect(process.env.MONGO_URI || 'mongodb://localhost:27017/aerovision');
     console.log('✅ Connected to MongoDB\n');
 
     // Find all AnalysisSession records missing farmerEmail

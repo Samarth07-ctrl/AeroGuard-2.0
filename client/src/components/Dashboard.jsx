@@ -142,7 +142,7 @@ export default function Dashboard({ session, setSession }) {
           <ShieldCheck className="w-5 h-5 text-cyan-400" />
           <div>
             <h1 className="text-sm font-extrabold tracking-tight leading-none uppercase">
-              AEROGUARD <span className="text-cyan-400 font-semibold">AI</span>
+              AEROVISION <span className="text-cyan-400 font-semibold">AI</span>
             </h1>
             <p className="text-[9px] uppercase tracking-[0.2em] text-zinc-600 font-medium mt-0.5">Mission Control</p>
           </div>

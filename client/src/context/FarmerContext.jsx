@@ -1,7 +1,7 @@
 /* eslint-disable react-refresh/only-export-components */
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
 
-const STORAGE_KEY = 'aeroguard_active_farmers';
+const STORAGE_KEY = 'aerovision_active_farmers';
 const FarmerContext = createContext(null);
 
 /**

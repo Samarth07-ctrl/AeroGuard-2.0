@@ -16,5 +16,6 @@ public:
                    double lat, 
                    double lon, 
                    const std::string& severity, 
-                   const std::string& pesticide);
+                   const std::string& pesticide,
+                   float confidence);
 };

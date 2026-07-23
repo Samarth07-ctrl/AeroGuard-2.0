@@ -103,7 +103,7 @@ export default function DroneDashboard() {
           <ShieldCheck size={20} color="#06b6d4" />
           <div>
             <h1 style={{ fontSize: '14px', fontWeight: 800, letterSpacing: '-0.02em', margin: 0 }}>
-              AEROGUARD <span style={{ color: '#06b6d4', fontWeight: 600 }}>AI</span>
+              AEROVISION <span style={{ color: '#06b6d4', fontWeight: 600 }}>AI</span>
             </h1>
             <p style={{ fontSize: '9px', textTransform: 'uppercase', letterSpacing: '0.2em', color: '#52525b', margin: 0 }}>Drone Intelligence Dashboard</p>
           </div>

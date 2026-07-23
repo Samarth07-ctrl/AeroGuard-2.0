@@ -24,7 +24,7 @@ export default function DashboardLayout() {
         <aside className="sticky top-6 h-[calc(100vh-3rem)] w-64 shrink-0 rounded-3xl bg-white p-4 shadow-sm flex flex-col">
           <Link to="/dashboard" className="mb-6 flex items-center gap-2 px-2">
             <Shield size={20} className="text-[#16a34a]" />
-            <span className="text-lg font-bold text-[#16a34a]">AeroGuard AI</span>
+            <span className="text-lg font-bold text-[#16a34a]">AeroVision AI</span>
           </Link>
 
           <nav className="space-y-1 flex-1">

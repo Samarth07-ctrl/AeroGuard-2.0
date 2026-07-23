@@ -37,4 +37,18 @@ router.get('/debug-sessions', async (req, res) => {
   }
 });
 
+router.delete('/:email', farmerController.deleteFarmer);
+
+router.get('/:email', async (req, res) => {
+  try {
+    const email = String(req.params.email || '').trim().toLowerCase();
+    const Farmer = require('../models/Farmer');
+    const farmer = await Farmer.findOne({ email });
+    if (!farmer) return res.status(404).json({ error: 'Farmer not found' });
+    return res.json(farmer);
+  } catch (err) {
+    return res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
 module.exports = router;

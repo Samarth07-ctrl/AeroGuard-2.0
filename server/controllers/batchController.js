@@ -186,7 +186,7 @@ async function processBatch(batchId, imageFiles, farmer, authSessionId, zipCloud
 
         // 5. Upload image to Cloudinary
         progress.message = `Syncing to cloud (${i + 1}/${imageFiles.length})…`;
-        const cloudResult = await cloudUploadImage(imgPath, `aeroguard/batches/${batchId}`);
+        const cloudResult = await cloudUploadImage(imgPath, `aerovision/batches/${batchId}`);
         if (cloudResult?.secure_url) {
           await AnalysisSession.updateOne(
             { sessionId: uploadId },
@@ -312,7 +312,7 @@ exports.uploadBatch = async (req, res) => {
           console.log(`[BATCH] ZIP extracted: ${imageFiles.length} images from ${uploaded.originalname}`);
 
           // Upload original ZIP to Cloudinary (non-blocking)
-          uploadRaw(uploaded.path, 'aeroguard/zips').then((r) => {
+          uploadRaw(uploaded.path, 'aerovision/zips').then((r) => {
             if (r?.secure_url) {
               zipCloudUrl = r.secure_url;
               BatchSession.updateOne({ batchId }, { $set: { zipCloudUrl: r.secure_url } }).catch(() => {});

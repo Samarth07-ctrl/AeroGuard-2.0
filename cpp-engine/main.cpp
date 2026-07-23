@@ -52,14 +52,14 @@ void fireWebhook(const std::string& payload) {
 
 int main(int argc, char** argv) {
     if (argc < 3) {
-        std::cerr << "Usage: ./aeroguard_engine <session_id> <image_path>" << std::endl;
+        std::cerr << "Usage: ./aerovision_engine <session_id> <image_path>" << std::endl;
         return 1;
     }
 
     std::string session_id = argv[1];
     std::string image_path = argv[2];
 
-    std::cout << "--- AeroGuard C++ Dual-Stage AI Engine ---" << std::endl;
+    std::cout << "--- AeroVision C++ Dual-Stage AI Engine ---" << std::endl;
     std::cout << "Session ID: " << session_id << " | Image: " << image_path << std::endl;
 
     // Load the 4K image using OpenCV
@@ -123,6 +123,6 @@ int main(int argc, char** argv) {
     // HTTP POST operation
     fireWebhook(string_payload);
 
-    std::cout << "--- AeroGuard C++ Operations Completed Successfully ---" << std::endl;
+    std::cout << "--- AeroVision C++ Operations Completed Successfully ---" << std::endl;
     return 0;
 }

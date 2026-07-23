@@ -44,6 +44,16 @@ const analysisSessionSchema = new mongoose.Schema(
     isVerified:  { type: Boolean, default: false },
 
     diseases:    { type: [diseaseSchema], default: [] },
+    
+    // AI Generated Advice (Saved so Mobile App can read via mongo_dart)
+    aiAdvice: {
+      english: { type: String, default: null },
+      hindi: { type: String, default: null },
+      marathi: { type: String, default: null }
+    },
+    weatherPrecautions: { type: String, default: null },
+    nrsScore:    { type: Number, default: null },
+
     createdAt:   { type: Date, default: Date.now },
   },
   { versionKey: false }

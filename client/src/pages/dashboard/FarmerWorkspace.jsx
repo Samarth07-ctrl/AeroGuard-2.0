@@ -60,17 +60,82 @@ export default function FarmerWorkspace() {
   const [clusterData, setClusterData] = useState(null);
   const [refreshKey, setRefreshKey] = useState(0);
 
+  const [reportLang, setReportLang] = useState('English');
+  const [generatingReport, setGeneratingReport] = useState(false);
+
+  const handleDownloadReport = async () => {
+    try {
+      setGeneratingReport(true);
+      const res = await axios.post(`${API}/ai/report`, {
+        sessionId,
+        language: reportLang,
+        weather
+      });
+      if (res.data && res.data.html) {
+        const printWindow = window.open('', '_blank');
+        printWindow.document.write(`
+          <html>
+            <head>
+              <title>AeroGuard Pesticide Report</title>
+              <style>
+                body { font-family: system-ui, sans-serif; padding: 40px; color: #111; max-width: 800px; margin: auto; }
+                h2 { color: #166534; border-bottom: 2px solid #166534; padding-bottom: 8px; }
+                p { line-height: 1.6; }
+                ul { line-height: 1.6; }
+                @media print {
+                  body { padding: 0; }
+                }
+              </style>
+            </head>
+            <body>
+              <h1>AeroGuard Precision Spray Report</h1>
+              <p><strong>Farmer Email:</strong> ${farmer?.email || 'Unknown'}</p>
+              <p><strong>Date:</strong> ${new Date().toLocaleDateString()}</p>
+              <hr/>
+              ${res.data.html}
+            </body>
+          </html>
+        `);
+        printWindow.document.close();
+        // Give it a moment to render HTML before printing
+        setTimeout(() => {
+          printWindow.print();
+        }, 500);
+      }
+    } catch (err) {
+      alert('Failed to generate report. Make sure Gemini API Key is valid.');
+    } finally {
+      setGeneratingReport(false);
+    }
+  };
+
   useEffect(() => {
     (async () => {
       try {
+        let lat = PUNE_LAT;
+        let lon = PUNE_LON;
+
+        // Fetch dynamic farmer location if available
+        if (farmer?.email) {
+          try {
+            const fRes = await axios.get(`${API}/farmer/${farmer.email}`);
+            if (fRes.data && fRes.data.lastLat && fRes.data.lastLon) {
+              lat = fRes.data.lastLat;
+              lon = fRes.data.lastLon;
+            }
+          } catch (e) {
+            console.log('Could not fetch dynamic farmer location, defaulting to Pune');
+          }
+        }
+
         const res = await fetch(
-          `https://api.open-meteo.com/v1/forecast?latitude=${PUNE_LAT}&longitude=${PUNE_LON}&current=temperature_2m,relative_humidity_2m,weather_code`
+          `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,relative_humidity_2m,weather_code`
         );
         const json = await res.json();
         setWeather(json.current || null);
       } catch { /* silent */ }
     })();
-  }, []);
+  }, [farmer?.email]);
 
   useEffect(() => {
     if (!sessionId) return;
@@ -183,7 +248,7 @@ export default function FarmerWorkspace() {
               // Force immediate re-fetch of clusters and alerts
               setRefreshKey((k) => k + 1);
               // Dispatch a global event so MapPage auto-refreshes
-              window.dispatchEvent(new CustomEvent('aeroguard:batch-complete', { detail: { batchId } }));
+              window.dispatchEvent(new CustomEvent('aerovision:batch-complete', { detail: { batchId } }));
             }
           } catch { /* silent */ }
         }, 3000);
@@ -423,6 +488,65 @@ export default function FarmerWorkspace() {
               Conditions favorable — standard quarantine perimeters active.
             </div>
           )}
+        </div>
+
+        {/* NEW WIDGET: Predictive Epidemiology & Download */}
+        <div className="rounded-3xl border border-gray-100 bg-white p-5 shadow-sm transition hover:shadow-md md:col-span-2">
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center gap-2">
+              <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-purple-50">
+                <Zap size={16} className="text-purple-600" />
+              </div>
+              <div>
+                <h3 className="text-sm font-bold text-gray-900">Predictive Epidemiology</h3>
+                <p className="text-[10px] text-gray-500">NRS & Pesticide Reports</p>
+              </div>
+            </div>
+            
+            <div className="flex items-center gap-2">
+              <select 
+                value={reportLang} 
+                onChange={e => setReportLang(e.target.value)}
+                className="text-xs border rounded px-2 py-1 bg-gray-50"
+              >
+                <option value="English">English</option>
+                <option value="Hindi">Hindi (हिंदी)</option>
+                <option value="Marathi">Marathi (मराठी)</option>
+              </select>
+              <button 
+                onClick={handleDownloadReport}
+                disabled={generatingReport || alerts.length === 0}
+                className="flex items-center gap-1 rounded bg-[#166534] px-3 py-1.5 text-xs font-semibold text-white transition hover:bg-green-800 disabled:opacity-50"
+              >
+                {generatingReport ? <Loader2 size={12} className="animate-spin" /> : <FileArchive size={12} />}
+                Download Spray Report
+              </button>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-2 gap-4">
+            <div className="rounded-2xl border border-gray-100 p-4">
+              <p className="text-xs text-gray-500 mb-1">Neighborhood Risk Score (NRS)</p>
+              <div className="flex items-end gap-2">
+                <p className={`text-3xl font-bold ${clusterData?.nrs > 70 ? 'text-red-600' : 'text-amber-500'}`}>
+                  {clusterData?.nrs || 0}
+                </p>
+                <p className="text-sm text-gray-400 mb-1">/ 100</p>
+              </div>
+              <p className="text-[10px] text-gray-500 mt-2">
+                {clusterData?.nrs > 70 ? 'CRITICAL SPREAD RISK' : 'MODERATE SPREAD RISK'}
+              </p>
+            </div>
+            <div className="rounded-2xl border border-gray-100 p-4">
+              <p className="text-xs text-gray-500 mb-1">Pathogen Types Detected</p>
+              <p className="text-sm font-bold text-gray-800 truncate">
+                {alerts.length > 0 ? Array.from(new Set(alerts.map(a => a.disease))).join(', ') : 'None'}
+              </p>
+              <p className="text-[10px] text-gray-500 mt-2">
+                Use the Precision Spray Report to target these exact pathogens and reduce blanket-spray costs by 70%.
+              </p>
+            </div>
+          </div>
         </div>
 
         {/* Widget 3: Live Alert Feed */}

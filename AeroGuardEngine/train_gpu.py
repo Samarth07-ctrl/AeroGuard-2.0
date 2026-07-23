@@ -3,7 +3,6 @@ import os
 import torch
 from ultralytics import YOLO
 
-
 def main():
     data_yaml = "Plant-disease-1/data.yaml"
     if not os.path.exists(data_yaml):

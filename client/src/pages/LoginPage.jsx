@@ -39,7 +39,7 @@ export default function LoginPage() {
         </div>
         <div className="p-8">
           <h1 className="text-2xl font-bold text-gray-900">Admin Login</h1>
-          <p className="mt-1 text-sm text-gray-500">Access the AeroGuard dashboard.</p>
+          <p className="mt-1 text-sm text-gray-500">Access the AeroVision dashboard.</p>
           <form className="mt-6 space-y-4" onSubmit={submit}>
             <input
               type="email"

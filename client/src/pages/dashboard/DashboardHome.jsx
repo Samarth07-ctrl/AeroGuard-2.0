@@ -74,7 +74,7 @@ function QrModal({ farmer, onClose }) {
         <div className="flex items-start gap-3 rounded-xl border border-amber-100 bg-amber-50 p-3">
           <Smartphone size={16} className="text-amber-600 mt-0.5 shrink-0" />
           <p className="text-xs text-amber-800 leading-relaxed">
-            Farmer can scan this code from the <strong>AeroGuard app</strong> to instantly connect,
+            Farmer can scan this code from the <strong>AeroVision app</strong> to instantly connect,
             or use the <strong>6-digit OTP</strong> sent to their email.
           </p>
         </div>
@@ -234,7 +234,7 @@ export default function DashboardHome() {
             <div>
               <h2 className="text-xl font-bold text-green-900">Multi-Tenant Command Center</h2>
               <p className="text-sm text-green-700/80">
-                Invite farmers via email — they connect using the QR code or OTP from the AeroGuard app.
+                Invite farmers via email — they connect using the QR code or OTP from the AeroVision app.
               </p>
             </div>
           </div>
@@ -348,8 +348,8 @@ export default function DashboardHome() {
                   <p className="text-xs text-green-700 font-medium mb-1">Connection ticket ready</p>
                   <p className="text-[11px] text-gray-600 leading-relaxed">
                     {ticketFarmer.emailStatus === 'skipped'
-                      ? 'Share the QR code with the farmer to connect via the AeroGuard app.'
-                      : 'OTP emailed to farmer. They can also scan this QR from the AeroGuard app.'}
+                      ? 'Share the QR code with the farmer to connect via the AeroVision app.'
+                      : 'OTP emailed to farmer. They can also scan this QR from the AeroVision app.'}
                   </p>
                   <button
                     onClick={() => setQrModalFarmer(ticketFarmer)}
@@ -478,9 +478,17 @@ export default function DashboardHome() {
 
                       {/* Remove */}
                       <button
-                        onClick={() => removeFarmer(farmer.sessionId)}
+                        onClick={async () => {
+                          try {
+                            await axios.delete(`${API}/farmer/${farmer.email}`);
+                            removeFarmer(farmer.sessionId);
+                          } catch (err) {
+                            console.error('Failed to delete farmer history:', err);
+                            alert('Failed to delete farmer history.');
+                          }
+                        }}
                         className="inline-flex items-center justify-center rounded-xl border border-red-200 bg-white px-3 py-2.5 text-red-500 transition hover:bg-red-50 hover:border-red-300"
-                        title="Remove farmer"
+                        title="Delete farmer and all history"
                       >
                         <Trash2 size={13} />
                       </button>

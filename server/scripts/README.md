@@ -1,4 +1,4 @@
-# AeroGuard Database Scripts
+# AeroVision Database Scripts
 
 This folder contains utility scripts for database diagnostics and migrations.
 
@@ -30,7 +30,7 @@ node server/scripts/diagnose-database.js
 
 **Example output:**
 ```
-🔍 AeroGuard Database Diagnostic Tool
+🔍 AeroVision Database Diagnostic Tool
 
 ✅ Connected to MongoDB
 
@@ -84,7 +84,7 @@ node server/scripts/migrate-farmer-email.js
 
 **Example output:**
 ```
-🔧 AeroGuard Database Migration: Populate farmerEmail
+🔧 AeroVision Database Migration: Populate farmerEmail
 
 ✅ Connected to MongoDB
 
@@ -170,7 +170,7 @@ Both scripts require:
 
 1. **MongoDB connection:**
    - Set `MONGO_URI` in `server/.env`
-   - Default: `mongodb://localhost:27017/aeroguard`
+   - Default: `mongodb://localhost:27017/aerovision`
 
 2. **Node.js dependencies:**
    ```bash
@@ -214,7 +214,7 @@ When creating new diagnostic or migration scripts:
 
 Before running on production:
 1. Test on a development database first
-2. Back up your database: `mongodump --db aeroguard`
+2. Back up your database: `mongodump --db aerovision`
 3. Verify the script's logic with a small dataset
 4. Check the output carefully before confirming changes
 

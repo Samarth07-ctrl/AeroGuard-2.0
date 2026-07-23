@@ -1,7 +1,7 @@
 {
-  "name": "aeroguard-webcc",
+  "name": "aerovision-webcc",
   "version": "1.0.0",
-  "description": "AeroGuard AI Web Command Center Monorepo",
+  "description": "AeroVision AI Web Command Center Monorepo",
   "scripts": {
     "start": "docker-compose up --build",
     "dev:server": "cd server && npm run dev",

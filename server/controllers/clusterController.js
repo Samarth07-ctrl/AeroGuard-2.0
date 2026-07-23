@@ -258,12 +258,24 @@ exports.getSessionClusters = async (req, res) => {
       };
     });
 
+    // Calculate NRS based on clusters and severity
+    let nrs = 0;
+    if (clusters.length > 0) {
+      const hasSevere = clusters.some(c => c.worstSeverity === 'Severe');
+      const clusterImpact = Math.min(clusters.length * 10, 50); // Up to 50 points from clusters
+      const humidityImpact = humidity > 70 ? 25 : (humidity > 50 ? 10 : 0); // Up to 25 points from weather
+      const severityImpact = hasSevere ? 20 : 10; // Up to 20 points from severity
+      nrs = clusterImpact + humidityImpact + severityImpact;
+      if (nrs > 100) nrs = 100;
+    }
+
     return res.status(200).json({
       sessionId,
       humidity,
       humidityBufferMeters,
       totalDetections: allDetections.length,
       clusters,
+      nrs // <-- Return the NRS score here
     });
   } catch (error) {
     console.error('[CLUSTER] error:', error);

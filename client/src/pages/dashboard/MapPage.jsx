@@ -139,10 +139,10 @@ export default function MapPage() {
     const iv = setInterval(() => setLastRefresh(Date.now()), 30000);
     // Also refresh immediately when any batch completes (cross-component event)
     const onBatchComplete = () => setLastRefresh(Date.now());
-    window.addEventListener('aeroguard:batch-complete', onBatchComplete);
+    window.addEventListener('aerovision:batch-complete', onBatchComplete);
     return () => {
       clearInterval(iv);
-      window.removeEventListener('aeroguard:batch-complete', onBatchComplete);
+      window.removeEventListener('aerovision:batch-complete', onBatchComplete);
     };
   }, []);
 

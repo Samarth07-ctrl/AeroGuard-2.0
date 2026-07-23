@@ -48,7 +48,7 @@ app.post('/api/alerts', async (req, res) => {
 
         const severityRaw = String(payload.severity || '').toLowerCase();
         const isHighSeverity = ['high', 'severe'].includes(severityRaw);
-        const passesGate = isHighSeverity || (confidence !== null && confidence >= 0.60);
+        const passesGate = isHighSeverity || (confidence !== null && confidence >= 0.40);
 
         if (!passesGate) {
             console.log(`   🔇 GATE DROPPED — conf=${confidence?.toFixed(2) ?? '?'} sev=${payload.severity}`);
@@ -179,6 +179,45 @@ app.post('/api/alerts', async (req, res) => {
                     }
                 );
                 console.log(`   ✅ DB: diseases[$set] on session ${sessionId.slice(0, 8)} (${cleaned.length} total) GPS-source=${analysisSession.gpsSource ?? 'unknown'}`);
+                
+                // --- ON-DEVICE SYNC: Generate Gemini AI Advice ONCE per session ---
+                // We only call Gemini if it hasn't been generated yet, so we don't spam the API on every webhook.
+                if ((!analysisSession.aiAdvice || !analysisSession.aiAdvice.english) && cleaned.length > 0 && process.env.GEMINI_API_KEY) {
+                    try {
+                        const diseaseList = cleaned.map(d => d.name).join(', ');
+                        const prompt = `Provide a 2-sentence actionable pesticide recommendation to spot-spray these pathogens: ${diseaseList}. Return exactly a JSON object with 3 keys: "english", "hindi", and "marathi" containing the translations. Do not include markdown blocks.`;
+                        const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${process.env.GEMINI_API_KEY}`, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] })
+                        });
+                        const data = await response.json();
+                        let rawText = data?.candidates?.[0]?.content?.parts?.[0]?.text || '{}';
+                        rawText = rawText.replace(/```json/g, '').replace(/```/g, '').trim();
+                        const parsedAdvice = JSON.parse(rawText);
+                        
+                        // Calculate a mock NRS Score for the session based on severity
+                        const hasSevere = cleaned.some(d => ['high', 'severe'].includes((d.severity || '').toLowerCase()));
+                        const nrsScore = hasSevere ? Math.floor(Math.random() * 20) + 75 : Math.floor(Math.random() * 30) + 30; // 75-95 if severe, 30-60 otherwise
+
+                        if (parsedAdvice.english) {
+                            await AnalysisSession.updateOne({ sessionId }, { 
+                                $set: { 
+                                    aiAdvice: {
+                                        english: parsedAdvice.english,
+                                        hindi: parsedAdvice.hindi,
+                                        marathi: parsedAdvice.marathi
+                                    },
+                                    nrsScore: nrsScore
+                                } 
+                            });
+                            console.log(`   🤖 Gemini AI Advice (Multi-Lang) & NRS (${nrsScore}) saved to MongoDB!`);
+                        }
+                    } catch (e) {
+                        console.error('   🤖 Gemini API Error in webhook:', e.message);
+                    }
+                }
+                
             } else {
                 console.log(`   ⚠️  DB: Could not find or create AnalysisSession for ${sessionId.slice(0, 8)} — no farmer found`);
             }
@@ -370,10 +409,13 @@ const farmerRoutes = require('./routes/farmerRoutes');
 const analysisRoutes = require('./routes/analysisRoutes');
 const authMiddleware = require('./middleware/authMiddleware');
 const analysisController = require('./controllers/analysisController');
+const aiRoutes = require('./routes/aiRoutes');
+
 app.use('/api', indexRoutes);
 app.use('/api/auth', authRoutes);
 app.use('/api/farmer', farmerRoutes);
 app.use('/api/analysis-sessions', analysisRoutes);
+app.use('/api/ai', aiRoutes);
 app.get('/api/map-data', authMiddleware, analysisController.getMapData);
 app.get('/api/risk-prediction', authMiddleware, analysisController.getRiskPrediction);
 
@@ -437,7 +479,7 @@ app.get('/api/farmer-detections', async (req, res) => {
 });
 
 // Database Connection
-mongoose.connect(process.env.MONGO_URI || 'mongodb://localhost:27017/aeroguard')
+mongoose.connect(process.env.MONGO_URI || 'mongodb://localhost:27017/aerovision')
   .then(async () => {
     const dbName = mongoose.connection.db.databaseName;
     console.log(`Connected to MongoDB — database: "${dbName}"`);
@@ -457,7 +499,7 @@ mongoose.connect(process.env.MONGO_URI || 'mongodb://localhost:27017/aeroguard')
     }
 
     app.listen(PORT, () => {
-      console.log(`\n🌐 AeroGuard Command Center running on http://localhost:${PORT}`);
+      console.log(`\n🌐 AeroVision Command Center running on http://localhost:${PORT}`);
       console.log(`📡 POST /api/alerts — Waiting for C++ Engine webhooks...`);
       console.log(`📡 GET  /api/alerts — React frontend polling endpoint ready.\n`);
     });
@@ -466,7 +508,7 @@ mongoose.connect(process.env.MONGO_URI || 'mongodb://localhost:27017/aeroguard')
     console.error('MongoDB connection error:', err.message);
     console.log('Starting without MongoDB (in-memory alerts only)...');
     app.listen(PORT, () => {
-      console.log(`\n🌐 AeroGuard Command Center running on http://localhost:${PORT} (No DB)`);
+      console.log(`\n🌐 AeroVision Command Center running on http://localhost:${PORT} (No DB)`);
       console.log(`📡 POST /api/alerts — Waiting for C++ Engine webhooks...`);
       console.log(`📡 GET  /api/alerts — React frontend polling endpoint ready.\n`);
     });

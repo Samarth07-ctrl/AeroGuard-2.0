@@ -238,7 +238,7 @@ int main(int argc, char* argv[]) {
                           << " | Severity: " << severity << "\n";
 
                 // Fire webhook to Node.js Command Center
-                bool sent = webhook.sendAlert(sessionId, farmerId, diseaseName, hitLat, hitLong, severity, pesticide);
+                bool sent = webhook.sendAlert(sessionId, farmerId, diseaseName, hitLat, hitLong, severity, pesticide, det.confidence);
                 if (!sent) {
                     std::cerr << "    [!] Webhook delivery failed for this detection.\n";
                 }

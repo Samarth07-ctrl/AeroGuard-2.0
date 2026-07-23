@@ -240,3 +240,30 @@ exports.verifyQr = async (req, res) => {
     return res.status(500).json({ error: 'Internal server error' });
   }
 };
+
+// ── DELETE /api/farmer/:email ─────────────────────────────────────────────
+// Hard deletes a farmer and all of their associated history from the database
+exports.deleteFarmer = async (req, res) => {
+  try {
+    const email = String(req.params.email || '').trim().toLowerCase();
+    if (!email) return res.status(400).json({ error: 'Email is required' });
+
+    console.log(`[FARMER] Hard deleting farmer and history for: ${email}`);
+
+    const Farmer = require('../models/Farmer');
+    const ScanSession = require('../models/ScanSession');
+    const AnalysisSession = require('../models/AnalysisSession');
+    const BatchSession = require('../models/BatchSession');
+
+    // Cascade delete across all collections
+    await Farmer.deleteOne({ email });
+    await ScanSession.deleteMany({ farmerEmail: email });
+    await AnalysisSession.deleteMany({ farmerEmail: email });
+    await BatchSession.deleteMany({ farmerEmail: email });
+
+    return res.status(200).json({ success: true, message: 'Farmer and history deleted' });
+  } catch (error) {
+    console.error('[FARMER] delete error:', error);
+    return res.status(500).json({ error: 'Internal server error' });
+  }
+};

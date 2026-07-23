@@ -5,7 +5,7 @@ export default function LandingPage() {
     <div className="min-h-screen bg-[#f9fafb] text-gray-900">
       <nav className="sticky top-0 z-40 border-b border-green-200/80 bg-white/80 backdrop-blur-md">
         <div className="mx-auto flex w-full max-w-6xl items-center justify-between px-6 py-4">
-          <div className="text-xl font-bold text-[#16a34a]">AeroGuard AI</div>
+          <div className="text-xl font-bold text-[#16a34a]">AeroVision AI</div>
           <div className="flex items-center gap-6 text-sm text-gray-700">
             <a href="#" className="hover:text-green-600">Home</a>
             <a href="#" className="hover:text-green-600">About</a>
@@ -25,10 +25,10 @@ export default function LandingPage() {
             AI-Driven Crop Protection
           </p>
           <h1 className="text-4xl font-extrabold leading-tight md:text-5xl">
-            AeroGuard AI: Precision Crop Intelligence.
+            AeroVision AI: Precision Crop Intelligence.
           </h1>
           <p className="text-base leading-7 text-gray-600">
-            A production-ready agri-intelligence platform blending real-time drone observations with AI diagnosis. AeroGuard helps teams detect outbreaks early, triage risk zones, and protect yield with data-backed action.
+            A production-ready agri-intelligence platform blending real-time drone observations with AI diagnosis. AeroVision helps teams detect outbreaks early, triage risk zones, and protect yield with data-backed action.
           </p>
           <p className="text-base leading-7 text-gray-600">
             Built on C++ Edge Computing for real-time triage, the system triggers single-image YOLO inference workflows from the backend and maps every disease coordinate into actionable field intelligence.

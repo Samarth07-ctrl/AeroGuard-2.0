@@ -1,7 +1,7 @@
 {
-  "name": "aeroguard-server",
+  "name": "aerovision-server",
   "version": "1.0.0",
-  "description": "AeroGuard AI backend node server",
+  "description": "AeroVision AI backend node server",
   "main": "server.js",
   "scripts": {
     "start": "node server.js",

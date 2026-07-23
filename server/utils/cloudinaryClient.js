@@ -29,7 +29,7 @@ if (CLOUDINARY_CLOUD_NAME && CLOUDINARY_API_KEY && CLOUDINARY_API_SECRET) {
  * @param {object} [opts]    Extra cloudinary upload options
  * @returns {Promise<{secure_url: string, public_id: string}|null>}
  */
-async function uploadImage(filePath, folder = 'aeroguard/detections', opts = {}) {
+async function uploadImage(filePath, folder = 'aerovision/detections', opts = {}) {
   if (!configured) return null;
   try {
     const result = await cloudinary.uploader.upload(filePath, {
@@ -50,7 +50,7 @@ async function uploadImage(filePath, folder = 'aeroguard/detections', opts = {})
  * @param {string} folder    Cloudinary folder name
  * @returns {Promise<{secure_url: string, public_id: string}|null>}
  */
-async function uploadRaw(filePath, folder = 'aeroguard/zips') {
+async function uploadRaw(filePath, folder = 'aerovision/zips') {
   if (!configured) return null;
   try {
     const result = await cloudinary.uploader.upload(filePath, {
