@@ -1,23 +1,17 @@
 const express = require('express');
 const farmerController = require('../controllers/farmerController');
 const ScanSession = require('../models/ScanSession');
-
 const router = express.Router();
-
 router.post('/request-otp', farmerController.requestOtp);
 router.post('/verify-otp',  farmerController.verifyOtp);
 router.post('/verify-qr',   farmerController.verifyQr);
-
-// ── DEBUG: Inspect OTP sessions for an email (remove in production) ──
 router.get('/debug-sessions', async (req, res) => {
   try {
     const email = String(req.query.email || '').trim().toLowerCase();
     if (!email) return res.status(400).json({ error: 'email query param required' });
-
     const sessions = await ScanSession.find({
       farmerEmail: { $regex: new RegExp(`^${email.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}$`, 'i') },
     }).sort({ createdAt: -1 }).limit(10).lean();
-
     return res.json({
       email,
       count: sessions.length,
@@ -36,9 +30,7 @@ router.get('/debug-sessions', async (req, res) => {
     return res.status(500).json({ error: err.message });
   }
 });
-
 router.delete('/:email', farmerController.deleteFarmer);
-
 router.get('/:email', async (req, res) => {
   try {
     const email = String(req.params.email || '').trim().toLowerCase();
@@ -50,5 +42,4 @@ router.get('/:email', async (req, res) => {
     return res.status(500).json({ error: 'Internal server error' });
   }
 });
-
 module.exports = router;

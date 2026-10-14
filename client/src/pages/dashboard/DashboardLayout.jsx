@@ -2,22 +2,18 @@ import { Link, NavLink, Outlet, useNavigate } from 'react-router-dom';
 import { BarChart3, CloudSun, Home, LogOut, MapPinned, ScanLine, Shield, Users } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { useFarmers } from '../../context/FarmerContext';
-
 const navClass = ({ isActive }) =>
   `flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm transition ${
     isActive ? 'bg-green-50 text-green-700 font-semibold' : 'text-gray-600 hover:bg-gray-100'
   }`;
-
 export default function DashboardLayout() {
   const navigate = useNavigate();
   const { admin, logout } = useAuth();
   const { activeFarmers } = useFarmers();
-
   const handleLogout = () => {
     logout();
     navigate('/login', { replace: true });
   };
-
   return (
     <div className="min-h-screen bg-[#f9fafb]">
       <div className="mx-auto flex max-w-7xl gap-6 px-4 py-6 sm:px-6">
@@ -26,7 +22,6 @@ export default function DashboardLayout() {
             <Shield size={20} className="text-[#16a34a]" />
             <span className="text-lg font-bold text-[#16a34a]">AeroVision AI</span>
           </Link>
-
           <nav className="space-y-1 flex-1">
             <NavLink to="/dashboard" end className={navClass}>
               <Home size={16} />
@@ -48,8 +43,7 @@ export default function DashboardLayout() {
               <CloudSun size={16} />
               Weather Intel
             </NavLink>
-
-            {/* ── Active Farmer Workspaces ── */}
+            {}
             {activeFarmers.length > 0 && (
               <>
                 <div className="mt-4 mb-2 px-3">
@@ -78,7 +72,6 @@ export default function DashboardLayout() {
               </>
             )}
           </nav>
-
           <div className="mt-auto border-t pt-4">
             <p className="px-2 text-xs text-gray-500">{admin?.email || 'Admin session'}</p>
             <button
@@ -90,7 +83,6 @@ export default function DashboardLayout() {
             </button>
           </div>
         </aside>
-
         <main className="min-w-0 flex-1 space-y-4 rounded-3xl bg-white p-6 shadow-sm">
           <Outlet />
         </main>

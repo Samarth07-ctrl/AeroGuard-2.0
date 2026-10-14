@@ -1,9 +1,7 @@
 import { useMemo, useRef, useState } from 'react';
 import axios from 'axios';
 import { Loader2, Radar, Search, ShieldCheck, UploadCloud } from 'lucide-react';
-
 const API = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000/api';
-
 export default function AnalyzePage() {
   const [step, setStep] = useState(1);
   const [email, setEmail] = useState('');
@@ -15,9 +13,7 @@ export default function AnalyzePage() {
   const [message, setMessage] = useState('');
   const [error, setError] = useState('');
   const otpRefs = useRef(Array.from({ length: 6 }, () => null));
-
   const canUpload = useMemo(() => Boolean(file && sessionId), [file, sessionId]);
-
   const requestOtp = async (e) => {
     e.preventDefault();
     setLoading(true);
@@ -35,7 +31,6 @@ export default function AnalyzePage() {
       setLoading(false);
     }
   };
-
   const verifyOtp = async (e) => {
     e.preventDefault();
     setLoading(true);
@@ -57,7 +52,6 @@ export default function AnalyzePage() {
       setLoading(false);
     }
   };
-
   const onOtpChange = (index, value) => {
     if (!/^\d?$/.test(value)) return;
     const next = [...otp];
@@ -67,13 +61,11 @@ export default function AnalyzePage() {
       otpRefs.current[index + 1]?.focus();
     }
   };
-
   const onOtpKeyDown = (index, event) => {
     if (event.key === 'Backspace' && !otp[index] && index > 0) {
       otpRefs.current[index - 1]?.focus();
     }
   };
-
   const upload = async () => {
     if (!canUpload) return;
     setLoading(true);
@@ -94,7 +86,6 @@ export default function AnalyzePage() {
       setLoading(false);
     }
   };
-
   return (
     <div className="space-y-6">
       <div>
@@ -103,7 +94,6 @@ export default function AnalyzePage() {
           Verify farmer via OTP, then upload one image to run C++ YOLO analysis.
         </p>
       </div>
-
       <div className="grid gap-4 md:grid-cols-3">
         <div className={`rounded-3xl border p-4 shadow-sm transition hover:shadow-md ${step >= 1 ? 'border-green-300 bg-green-50/60' : 'border-gray-200 bg-white'}`}>
           <p className="text-xs font-semibold uppercase tracking-wide text-gray-500">Step 1</p>
@@ -118,7 +108,6 @@ export default function AnalyzePage() {
           <p className="mt-1 font-semibold text-gray-900">Drone Dock Analyze</p>
         </div>
       </div>
-
       {step === 1 && (
         <form onSubmit={requestOtp} className="max-w-xl space-y-4 rounded-3xl border border-gray-200 bg-white p-5 shadow-sm transition hover:shadow-md">
           <label className="text-sm font-medium text-gray-700">Farmer Email ID</label>
@@ -139,7 +128,6 @@ export default function AnalyzePage() {
           </button>
         </form>
       )}
-
       {step === 2 && (
         <form onSubmit={verifyOtp} className="max-w-xl space-y-4 rounded-3xl border border-gray-200 bg-white p-5 shadow-sm transition hover:shadow-md">
           <p className="text-sm text-gray-600">Enter the OTP sent to <span className="font-semibold">{email}</span>.</p>
@@ -164,7 +152,6 @@ export default function AnalyzePage() {
           </button>
         </form>
       )}
-
       {step === 3 && (
         <div className="max-w-xl space-y-4 rounded-3xl border border-gray-200 bg-white p-5 shadow-sm transition hover:shadow-md">
           <p className="text-sm text-gray-600">Session: <span className="font-mono">{sessionId}</span></p>
@@ -196,7 +183,6 @@ export default function AnalyzePage() {
           </button>
         </div>
       )}
-
       {message && <div className="rounded-xl border border-green-200 bg-green-50 p-3 text-sm text-green-700">{message}</div>}
       {error && <div className="rounded-xl border border-red-200 bg-red-50 p-3 text-sm text-red-700">{error}</div>}
     </div>

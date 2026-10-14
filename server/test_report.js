@@ -10,7 +10,6 @@ async function test() {
         weather: { temperature_2m: 25, relative_humidity_2m: 80 }
       })
     });
-    
     console.log("Status:", res.status);
     const text = await res.text();
     console.log("Response length:", text.length);
@@ -19,5 +18,4 @@ async function test() {
     console.error("Fetch failed:", err);
   }
 }
-
 test();

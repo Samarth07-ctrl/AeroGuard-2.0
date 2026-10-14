@@ -2,7 +2,6 @@ import os
 import sys
 import subprocess
 
-# Auto-install dependencies if missing
 try:
     from roboflow import Roboflow
     from ultralytics import YOLO
@@ -17,7 +16,6 @@ def main():
     print("🚀 AeroGuard AI Trainer pipeline")
     print("====================================\n")
 
-    # 1. Download Dataset from Roboflow
     print("[1] Downing YOLOv8 Annotated Dataset from Roboflow...")
     rf = Roboflow(api_key="pD6KFjJYptGqdt2gYnHN")
     project = rf.workspace("capstone-u7skk").project("plant-disease-6ex9f")
@@ -26,17 +24,12 @@ def main():
     
     print(f"\n[+] Dataset downloaded successfully to: {dataset.location}\n")
 
-    # 2. Train YOLO model
     print("[2] Initializing YOLOv8n architecture and starting PyTorch Training...")
-    print("    Note: Training for 3 epochs to generate a rapid prototype deployment weight.")
-    model = YOLO('yolov8n.pt') # Load pre-trained nano model for speed
+    model = YOLO('yolov8n.pt')
     
-    # Run the training
     data_yaml_path = os.path.join(dataset.location, "data.yaml")
     results = model.train(data=data_yaml_path, epochs=3, imgsz=640, plots=False)
 
-    # 3. Export to ONNX (Open Neural Network Exchange)
-    # This is crucial so our C++ OpenCV dnn::readNetFromONNX can ingest it
     print("\n[3] Exporting trained model to ONNX format...")
     exported_path = model.export(format='onnx')
     

@@ -8,10 +8,7 @@ import {
   UploadCloud, Loader2, HardDrive, FileArchive, Zap,
   Activity, ShieldCheck, Radio, CheckCircle2, Target, AlertTriangle
 } from 'lucide-react';
-
 const API = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000/api';
-
-// Custom Leaflet icon factory
 const createIcon = (color) => L.divIcon({
   className: '',
   iconSize: [28, 28],
@@ -19,7 +16,6 @@ const createIcon = (color) => L.divIcon({
   popupAnchor: [0, -16],
   html: `<div style="position:relative;width:28px;height:28px;display:flex;align-items:center;justify-content:center;"><div style="position:absolute;inset:0;border-radius:50%;background:${color};opacity:0.25;animation:ping 2s cubic-bezier(0,0,0.2,1) infinite;"></div><div style="width:14px;height:14px;border-radius:50%;background:${color};border:2px solid white;box-shadow:0 0 12px ${color}80;"></div></div><style>@keyframes ping{75%,100%{transform:scale(2);opacity:0}}</style>`
 });
-
 // Helper to recenter map
 function MapRecenter({ center, zoom }) {
   const map = useMap();
@@ -28,7 +24,6 @@ function MapRecenter({ center, zoom }) {
   }, [center, zoom, map]);
   return null;
 }
-
 // ── Severity color config ──
 const SEV = {
   Severe: { color: '#e11d48', label: 'CRITICAL' },
@@ -36,7 +31,6 @@ const SEV = {
   Medium: { color: '#f97316', label: 'MEDIUM' },
   Low:    { color: '#eab308', label: 'LOW' },
 };
-
 export default function Dashboard({ session, setSession }) {
   const [file, setFile] = useState(null);
   const [uploading, setUploading] = useState(false);
@@ -44,26 +38,18 @@ export default function Dashboard({ session, setSession }) {
   const [dragActive, setDragActive] = useState(false);
   const [, setSelectedPin] = useState(null);
   const fileRef = useRef(null);
-
   const results = session.results || [];
   const hasResults = session.status === 'completed' && results.length > 0;
-
-  // Keep active session ID available for other views (e.g. DroneDashboard)
   useEffect(() => {
     if (session.sessionId) {
       localStorage.setItem('activeSessionId', session.sessionId);
     }
   }, [session.sessionId]);
-
-  // ── Map center ──
   const defaultCenter = results.length > 0
     ? [results[0].lat, results[0].long]
     : [18.5204, 73.8567];
-
   const [mapCenter, setMapCenter] = useState(null);
   const [mapZoom, setMapZoom] = useState(16);
-
-  // ── Poll for processing completion ──
   useEffect(() => {
     let interval, progressInterval;
     if (session.status === 'processing') {
@@ -73,7 +59,6 @@ export default function Dashboard({ session, setSession }) {
         if (prog > 95) prog = 95;
         setUploadProgress(Math.min(prog, 95));
       }, 500);
-
       interval = setInterval(async () => {
         try {
           const res = await axios.get(`${API}/session/${session.sessionId}`);
@@ -82,7 +67,6 @@ export default function Dashboard({ session, setSession }) {
             clearInterval(progressInterval);
             setTimeout(() => {
               setSession(prev => ({ ...prev, status: 'completed', results: res.data.results }));
-              // Re-center map on first result
               if (res.data.results?.[0]) {
                 setMapCenter([res.data.results[0].lat, res.data.results[0].long]);
                 setMapZoom(17);
@@ -94,26 +78,20 @@ export default function Dashboard({ session, setSession }) {
           console.error('Poll error:', err);
         }
       }, 2000);
-
       return () => { clearInterval(interval); clearInterval(progressInterval); };
     }
   }, [session.status, session.sessionId, setSession]);
-
-  // ── Drag & Drop ──
   const handleDrag = useCallback((e) => {
     e.preventDefault();
     e.stopPropagation();
     setDragActive(e.type === 'dragenter' || e.type === 'dragover');
   }, []);
-
   const handleDrop = useCallback((e) => {
     e.preventDefault();
     e.stopPropagation();
     setDragActive(false);
     if (e.dataTransfer.files?.[0]) setFile(e.dataTransfer.files[0]);
   }, []);
-
-  // ── Upload ──
   const handleUpload = async () => {
     if (!file) return;
     setUploading(true);
@@ -132,11 +110,9 @@ export default function Dashboard({ session, setSession }) {
       setUploading(false);
     }
   };
-
   return (
     <div className="flex-1 flex flex-col h-screen">
-
-      {/* ══════ Top Nav ══════ */}
+      {}
       <header className="card-glass border-t-0 border-x-0 px-5 py-3 flex items-center justify-between shrink-0 relative noise z-20">
         <div className="flex items-center gap-2.5">
           <ShieldCheck className="w-5 h-5 text-cyan-400" />
@@ -161,15 +137,12 @@ export default function Dashboard({ session, setSession }) {
           </div>
         </div>
       </header>
-
-      {/* ══════ Two-Column Layout ══════ */}
+      {}
       <div className="flex-1 flex min-h-0">
-
-        {/* ── LEFT: Upload Panel ── */}
+        {}
         <div className="w-[380px] shrink-0 border-r border-white/[0.04] flex flex-col bg-zinc-950/50 backdrop-blur-sm overflow-y-auto">
           <div className="p-5 flex flex-col flex-1">
-
-            {/* Section Title */}
+            {}
             <div className="mb-5">
               <h2 className="text-base font-bold tracking-tight flex items-center gap-2">
                 <HardDrive className="w-4 h-4 text-cyan-400" />
@@ -177,8 +150,7 @@ export default function Dashboard({ session, setSession }) {
               </h2>
               <p className="text-zinc-600 text-[11px] mt-1">Upload drone imagery or ZIP archives</p>
             </div>
-
-            {/* Processing overlay */}
+            {}
             {session.status === 'processing' ? (
               <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}
                 className="flex-1 flex flex-col items-center justify-center text-center">
@@ -201,13 +173,11 @@ export default function Dashboard({ session, setSession }) {
                 <p className="text-[10px] text-zinc-700 font-mono">{Math.round(uploadProgress)}% COMPLETE</p>
               </motion.div>
             ) : session.status === 'completed' ? (
-              /* Results summary */
-              <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex-1 flex flex-col">
+                            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex-1 flex flex-col">
                 <div className="flex items-center gap-2 mb-4 p-3 bg-cyan-500/[0.04] border border-cyan-500/[0.08] rounded-xl">
                   <CheckCircle2 className="w-4 h-4 text-cyan-400 shrink-0" />
                   <span className="text-xs text-cyan-300 font-medium">Analysis complete — {results.length} hotspots detected</span>
                 </div>
-
                 <div className="space-y-2 flex-1">
                   {results.map((r, i) => {
                     const sev = SEV[r.severity] || SEV.High;
@@ -235,8 +205,7 @@ export default function Dashboard({ session, setSession }) {
                 </div>
               </motion.div>
             ) : (
-              /* Upload dropzone */
-              <>
+                            <>
                 <div
                   onDragEnter={handleDrag} onDragLeave={handleDrag} onDragOver={handleDrag} onDrop={handleDrop}
                   onClick={() => fileRef.current?.click()}
@@ -247,7 +216,6 @@ export default function Dashboard({ session, setSession }) {
                 >
                   <input ref={fileRef} type="file" className="hidden" accept=".zip,.jpg,.jpeg,.png,.tiff,.tif"
                     onChange={(e) => e.target.files?.[0] && setFile(e.target.files[0])} />
-
                   <AnimatePresence mode="wait">
                     {file ? (
                       <motion.div key="f" initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }}
@@ -271,7 +239,6 @@ export default function Dashboard({ session, setSession }) {
                     )}
                   </AnimatePresence>
                 </div>
-
                 <motion.button onClick={handleUpload} disabled={!file || uploading}
                   whileHover={file ? { scale: 1.01 } : {}} whileTap={file ? { scale: 0.99 } : {}}
                   className="mt-4 w-full bg-cyan-500 hover:bg-cyan-400 disabled:bg-zinc-800 disabled:text-zinc-600 text-zinc-950 font-bold py-3 rounded-xl transition-colors flex items-center justify-center gap-2 disabled:cursor-not-allowed text-sm">
@@ -282,18 +249,15 @@ export default function Dashboard({ session, setSession }) {
               </>
             )}
           </div>
-
-          {/* Footer badge */}
+          {}
           <div className="px-5 py-3 border-t border-white/[0.03] flex items-center justify-center gap-2 shrink-0">
             <CheckCircle2 className="w-3 h-3 text-zinc-700" />
             <span className="text-[10px] text-zinc-700 font-mono tracking-wider">SESSION AUTHENTICATED</span>
           </div>
         </div>
-
-        {/* ── RIGHT: Leaflet Satellite Map ── */}
+        {}
         <div className="flex-1 relative">
-
-          {/* Hotspot badges floating on top of map */}
+          {}
           {hasResults && (
             <div className="absolute top-4 left-4 z-[1000] flex items-center gap-2">
               <div className="card-glass px-3 py-2 rounded-lg flex items-center gap-2 noise">
@@ -306,7 +270,6 @@ export default function Dashboard({ session, setSession }) {
               </div>
             </div>
           )}
-
           <MapContainer
             center={defaultCenter}
             zoom={16}
@@ -320,8 +283,7 @@ export default function Dashboard({ session, setSession }) {
               maxZoom={20}
             />
             {mapCenter && <MapRecenter center={mapCenter} zoom={mapZoom} />}
-
-            {/* ── Pulsating Disease Markers ── */}
+            {}
             {results.map((point, i) => {
               const sev = SEV[point.severity] || SEV.High;
               return (

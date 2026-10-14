@@ -12,18 +12,15 @@ import {
   Shield, Thermometer, UploadCloud, Zap
 } from 'lucide-react';
 import { useFarmers } from '../../context/FarmerContext';
-
 const API = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000/api';
 const PUNE_LAT = 18.5204;
 const PUNE_LON = 73.8567;
-
 const SEV = {
   Severe: { color: '#dc2626', label: 'CRITICAL' },
   High:   { color: '#ef4444', label: 'HIGH' },
   Medium: { color: '#f97316', label: 'MEDIUM' },
   Low:    { color: '#22c55e', label: 'LOW' },
 };
-
 const createIcon = (color) =>
   L.divIcon({
     className: '',
@@ -31,7 +28,6 @@ const createIcon = (color) =>
     iconAnchor: [10, 10],
     html: `<div style="width:12px;height:12px;border-radius:50%;background:${color};border:2px solid white;box-shadow:0 0 8px ${color}60;"></div>`,
   });
-
 function FitBounds({ bounds }) {
   const map = useMap();
   useEffect(() => {
@@ -41,12 +37,10 @@ function FitBounds({ bounds }) {
   }, [bounds, map]);
   return null;
 }
-
 export default function FarmerWorkspace() {
   const { sessionId } = useParams();
   const { getFarmer } = useFarmers();
   const farmer = getFarmer(sessionId);
-
   const [file, setFile] = useState(null);
   const [uploading, setUploading] = useState(false);
   const [uploadMsg, setUploadMsg] = useState('');
@@ -54,15 +48,12 @@ export default function FarmerWorkspace() {
   const [activeUploadId, setActiveUploadId] = useState(null);
   const [batchProgress, setBatchProgress] = useState(null); // bulk batch progress
   const fileRef = useRef(null);
-
   const [weather, setWeather] = useState(null);
   const [alerts, setAlerts] = useState([]);
   const [clusterData, setClusterData] = useState(null);
   const [refreshKey, setRefreshKey] = useState(0);
-
   const [reportLang, setReportLang] = useState('English');
   const [generatingReport, setGeneratingReport] = useState(false);
-
   const handleDownloadReport = async () => {
     try {
       setGeneratingReport(true);
@@ -97,7 +88,6 @@ export default function FarmerWorkspace() {
           </html>
         `);
         printWindow.document.close();
-        // Give it a moment to render HTML before printing
         setTimeout(() => {
           printWindow.print();
         }, 500);
@@ -108,14 +98,11 @@ export default function FarmerWorkspace() {
       setGeneratingReport(false);
     }
   };
-
   useEffect(() => {
     (async () => {
       try {
         let lat = PUNE_LAT;
         let lon = PUNE_LON;
-
-        // Fetch dynamic farmer location if available
         if (farmer?.email) {
           try {
             const fRes = await axios.get(`${API}/farmer/${farmer.email}`);
@@ -127,35 +114,27 @@ export default function FarmerWorkspace() {
             console.log('Could not fetch dynamic farmer location, defaulting to Pune');
           }
         }
-
         const res = await fetch(
           `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,relative_humidity_2m,weather_code`
         );
         const json = await res.json();
         setWeather(json.current || null);
-      } catch { /* silent */ }
+      } catch {  }
     })();
   }, [farmer?.email]);
-
   useEffect(() => {
     if (!sessionId) return;
-
     const poll = async () => {
       try {
-        // Fetch all analysis sessions for this farmer to get ALL their detections
         const sessionsRes = await axios.get(`${API}/analysis-sessions/session/${sessionId}`);
         const sessions = sessionsRes.data || [];
-        
-        // Extract all diseases from all sessions
         const allAlerts = [];
         for (const session of (Array.isArray(sessions) ? sessions : [])) {
           for (const disease of (session.diseases || [])) {
-            // Skip safe/healthy sentinels
             const sev = (disease.severity || '').toLowerCase();
             const name = (disease.name || '').toLowerCase();
             if (sev === 'safe' || name.includes('healthy') || name.includes('no disease') || name.includes('no anomalies')) continue;
             if (!disease.lat || !disease.lon) continue;
-            
             allAlerts.push({
               sessionId: session.sessionId,
               disease: disease.name,
@@ -168,24 +147,19 @@ export default function FarmerWorkspace() {
             });
           }
         }
-        
-        // Always update — even if empty — to clear stale data
         setAlerts(allAlerts);
       } catch (err) {
         console.error('[ALERTS] Fetch error:', err);
       }
     };
-
     poll();
     const iv = setInterval(poll, 5000);
     return () => clearInterval(iv);
   }, [sessionId, refreshKey]);
-
   useEffect(() => {
     if (!sessionId) return;
     const fetchClusters = async () => {
       try {
-        // Pass farmer email to cluster endpoint for direct lookup (avoids fallback chain)
         const emailParam = farmer?.email ? `?email=${encodeURIComponent(farmer.email)}` : '';
         const res = await axios.get(`${API}/clusters/${sessionId}${emailParam}`);
         console.log(`[FarmerWorkspace] Fetched clusters:`, res.data?.totalDetections, 'detections');
@@ -198,45 +172,36 @@ export default function FarmerWorkspace() {
     const iv = setInterval(fetchClusters, 8000);
     return () => clearInterval(iv);
   }, [sessionId, farmer?.email, refreshKey]);
-
   const handleDrag = useCallback((e) => {
     e.preventDefault();
     e.stopPropagation();
     setDragActive(e.type === 'dragenter' || e.type === 'dragover');
   }, []);
-
   const handleDrop = useCallback((e) => {
     e.preventDefault();
     e.stopPropagation();
     setDragActive(false);
     if (e.dataTransfer.files?.[0]) setFile(e.dataTransfer.files[0]);
   }, []);
-
   const handleUpload = async () => {
     if (!file) return;
     setUploading(true);
     setUploadMsg('');
     setBatchProgress(null);
-
     const isZip = file.name.toLowerCase().endsWith('.zip');
     const endpoint = isZip ? `${API}/batch/upload` : `${API}/upload`;
-
     try {
       const form = new FormData();
       form.append('drone_data', file);
       form.append('sessionId', sessionId);
-
       const res = await axios.post(endpoint, form, {
         headers: { 'Content-Type': 'multipart/form-data' },
       });
-
       if (isZip && res.data.batchId) {
-        // ── Bulk batch: start polling progress ──
         const { batchId, totalImages } = res.data;
         setBatchProgress({ batchId, status: 'queued', totalImages, processedImages: 0, message: 'Starting…' });
         setUploadMsg('');
         setFile(null);
-
         // Poll /api/batch/:batchId/progress every 3s
         const pollInterval = setInterval(async () => {
           try {
@@ -245,21 +210,16 @@ export default function FarmerWorkspace() {
             if (prog.data.status === 'completed' || prog.data.status === 'failed') {
               clearInterval(pollInterval);
               setActiveUploadId(batchId);
-              // Force immediate re-fetch of clusters and alerts
               setRefreshKey((k) => k + 1);
-              // Dispatch a global event so MapPage auto-refreshes
               window.dispatchEvent(new CustomEvent('aerovision:batch-complete', { detail: { batchId } }));
             }
-          } catch { /* silent */ }
+          } catch {  }
         }, 3000);
-
       } else {
-        // ── Single image: existing flow ──
         const uploadId = res.data.sessionId;
         setActiveUploadId(uploadId);
         setUploadMsg('Upload successful — C++ engine triggered.');
         setFile(null);
-        // Force cluster re-fetch after a short delay (wait for C++ engine)
         setTimeout(() => setRefreshKey((k) => k + 1), 5000);
       }
     } catch (err) {
@@ -268,7 +228,6 @@ export default function FarmerWorkspace() {
       setUploading(false);
     }
   };
-
   const mapBounds = (() => {
     const clusters = clusterData?.clusters || [];
     if (clusters.length > 0) {
@@ -292,15 +251,12 @@ export default function FarmerWorkspace() {
     }
     return null;
   })();
-
   const humidity = weather?.relative_humidity_2m ?? clusterData?.humidity ?? null;
   const fungalRisk = humidity !== null ? (humidity > 70 ? 'HIGH' : humidity > 50 ? 'MODERATE' : 'LOW') : '--';
   const fungalColor = fungalRisk === 'HIGH' ? 'text-red-600' : fungalRisk === 'MODERATE' ? 'text-amber-600' : 'text-green-600';
-
   return (
     <div className="space-y-4">
-
-      {/* Top Bar */}
+      {}
       <div className="flex items-center justify-between">
         <Link
           to="/dashboard"
@@ -322,8 +278,7 @@ export default function FarmerWorkspace() {
           </span>
         </div>
       </div>
-
-      {/* Farmer identity banner */}
+      {}
       {farmer && (
         <div className="rounded-2xl border border-green-100 bg-gradient-to-r from-green-50 to-white px-4 py-3">
           <div className="flex items-center gap-2">
@@ -335,11 +290,9 @@ export default function FarmerWorkspace() {
           </div>
         </div>
       )}
-
-      {/* 2x2 Grid */}
+      {}
       <div className="grid gap-4 lg:grid-cols-2">
-
-        {/* Widget 1: Drone Dock */}
+        {}
         <div className="rounded-3xl border border-gray-100 bg-white p-5 shadow-sm transition hover:shadow-md">
           <div className="flex items-center gap-2 mb-4">
             <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-green-50">
@@ -350,7 +303,6 @@ export default function FarmerWorkspace() {
               <p className="text-[10px] text-gray-500">Upload scan imagery</p>
             </div>
           </div>
-
           <div
             onDragEnter={handleDrag}
             onDragLeave={handleDrag}
@@ -386,7 +338,6 @@ export default function FarmerWorkspace() {
               </div>
             )}
           </div>
-
           <button
             onClick={handleUpload}
             disabled={!file || uploading}
@@ -395,14 +346,12 @@ export default function FarmerWorkspace() {
             {uploading ? <Loader2 size={14} className="animate-spin" /> : <Zap size={14} />}
             {uploading ? 'Transmitting…' : 'Upload & Analyze'}
           </button>
-
           {uploadMsg && (
             <p className={`mt-2 text-xs ${uploadMsg.includes('failed') ? 'text-red-600' : 'text-green-600'}`}>
               {uploadMsg}
             </p>
           )}
-
-          {/* ── Batch Progress Tracker ── */}
+          {}
           {batchProgress && (
             <div className="mt-3 rounded-xl border border-green-100 bg-green-50/60 p-3 space-y-2">
               <div className="flex items-center justify-between">
@@ -415,8 +364,7 @@ export default function FarmerWorkspace() {
                   {batchProgress.processedImages}/{batchProgress.totalImages} images
                 </span>
               </div>
-
-              {/* Progress bar */}
+              {}
               <div className="w-full bg-gray-200 rounded-full h-1.5 overflow-hidden">
                 <div
                   className="h-full bg-green-500 rounded-full transition-all duration-500"
@@ -427,9 +375,7 @@ export default function FarmerWorkspace() {
                   }}
                 />
               </div>
-
               <p className="text-[10px] text-gray-600 leading-relaxed">{batchProgress.message}</p>
-
               {batchProgress.totalDetections > 0 && (
                 <p className="text-[10px] font-semibold text-red-600">
                   🦠 {batchProgress.totalDetections} disease detections found
@@ -442,8 +388,7 @@ export default function FarmerWorkspace() {
               )}
             </div>
           )}        </div>
-
-        {/* Widget 2: Weather Intel */}
+        {}
         <div className="rounded-3xl border border-gray-100 bg-white p-5 shadow-sm transition hover:shadow-md">
           <div className="flex items-center gap-2 mb-4">
             <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-blue-50">
@@ -454,7 +399,6 @@ export default function FarmerWorkspace() {
               <p className="text-[10px] text-gray-500">Live conditions &amp; fungal risk</p>
             </div>
           </div>
-
           <div className="grid grid-cols-3 gap-3 mb-4">
             <div className="rounded-2xl bg-gray-50 p-4 text-center">
               <Thermometer size={16} className="mx-auto mb-1 text-gray-500" />
@@ -476,7 +420,6 @@ export default function FarmerWorkspace() {
               <p className={`text-xl font-bold ${fungalColor}`}>{fungalRisk}</p>
             </div>
           </div>
-
           {humidity !== null && humidity > 70 ? (
             <div className="flex items-center gap-2 rounded-xl border border-amber-200 bg-amber-50 p-3 text-xs text-amber-800 font-medium">
               <AlertTriangle size={14} />
@@ -489,8 +432,7 @@ export default function FarmerWorkspace() {
             </div>
           )}
         </div>
-
-        {/* NEW WIDGET: Predictive Epidemiology & Download */}
+        {}
         <div className="rounded-3xl border border-gray-100 bg-white p-5 shadow-sm transition hover:shadow-md md:col-span-2">
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-2">
@@ -502,7 +444,6 @@ export default function FarmerWorkspace() {
                 <p className="text-[10px] text-gray-500">NRS & Pesticide Reports</p>
               </div>
             </div>
-            
             <div className="flex items-center gap-2">
               <select 
                 value={reportLang} 
@@ -523,7 +464,6 @@ export default function FarmerWorkspace() {
               </button>
             </div>
           </div>
-
           <div className="grid grid-cols-2 gap-4">
             <div className="rounded-2xl border border-gray-100 p-4">
               <p className="text-xs text-gray-500 mb-1">Neighborhood Risk Score (NRS)</p>
@@ -548,8 +488,7 @@ export default function FarmerWorkspace() {
             </div>
           </div>
         </div>
-
-        {/* Widget 3: Live Alert Feed */}
+        {}
         <div className="rounded-3xl border border-gray-100 bg-white p-5 shadow-sm transition hover:shadow-md">
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-2">
@@ -565,7 +504,6 @@ export default function FarmerWorkspace() {
               {alerts.length} alerts
             </span>
           </div>
-
           <div className="max-h-[280px] space-y-2 overflow-y-auto pr-1">
             {alerts.length === 0 && (
               <div className="flex flex-col items-center justify-center py-10 opacity-50">
@@ -606,8 +544,7 @@ export default function FarmerWorkspace() {
             })}
           </div>
         </div>
-
-        {/* Widget 4: Tactical Map */}
+        {}
         <div className="rounded-3xl border border-gray-100 bg-white shadow-sm transition hover:shadow-md overflow-hidden">
           <div className="flex items-center justify-between p-5 pb-3">
             <div className="flex items-center gap-2">
@@ -630,7 +567,6 @@ export default function FarmerWorkspace() {
               </div>
             )}
           </div>
-
           <div className="h-[340px]">
             <MapContainer
               center={[PUNE_LAT, PUNE_LON]}
@@ -644,10 +580,8 @@ export default function FarmerWorkspace() {
                 attribution="&copy; Google Maps"
                 maxZoom={20}
               />
-
               {mapBounds && <FitBounds bounds={mapBounds} />}
-
-              {/* Cluster Zones — infection box + quarantine perimeter */}
+              {}
               {(clusterData?.clusters || []).map((cluster) => {
                 const iz = cluster.infectionZone;
                 const qp = cluster.quarantinePerimeter;
@@ -670,7 +604,6 @@ export default function FarmerWorkspace() {
                         </span>
                       </Tooltip>
                     </Rectangle>
-
                     <Rectangle
                       bounds={[[iz.minLat, iz.minLon], [iz.maxLat, iz.maxLon]]}
                       pathOptions={{
@@ -686,7 +619,6 @@ export default function FarmerWorkspace() {
                         </span>
                       </Tooltip>
                     </Rectangle>
-
                     {cluster.points.map((pt, pi) => (
                       <Marker
                         key={`${cluster.clusterId}-pt-${pi}`}
@@ -707,8 +639,7 @@ export default function FarmerWorkspace() {
                   </React.Fragment>
                 );
               })}
-
-              {/* Fallback raw markers when no clusters yet */}
+              {}
               {!clusterData?.clusters?.length && alerts.map((alert, i) => {
                 const sev = SEV[alert.severity] || SEV.High;
                 return (
@@ -728,8 +659,7 @@ export default function FarmerWorkspace() {
               })}
             </MapContainer>
           </div>
-
-          {/* Legend */}
+          {}
           <div className="flex items-center gap-4 px-5 py-3 border-t border-gray-100 bg-gray-50/50">
             <div className="flex items-center gap-1.5">
               <div className="h-3 w-5 rounded-sm bg-red-500/40 border border-red-500" />
@@ -745,7 +675,6 @@ export default function FarmerWorkspace() {
             </div>
           </div>
         </div>
-
       </div>
     </div>
   );

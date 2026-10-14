@@ -6,10 +6,10 @@
 #include <onnxruntime_cxx_api.h>
 
 struct BBox {
-    int x; // top-left x relative to original image
-    int y; // top-left y relative to original image
-    int w; // width
-    int h; // height
+    int x;
+    int y;
+    int w;
+    int h;
     float confidence;
 };
 
@@ -21,6 +21,5 @@ public:
 private:
     Ort::Env env;
     Ort::SessionOptions sessionOptions;
-    // unique_ptr to handle the session
     std::unique_ptr<Ort::Session> session;
 };

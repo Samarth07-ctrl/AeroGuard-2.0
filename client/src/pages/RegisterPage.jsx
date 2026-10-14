@@ -1,15 +1,12 @@
 import { useState } from 'react';
 import axios from 'axios';
 import { Link, useNavigate } from 'react-router-dom';
-
 const API = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000/api';
-
 export default function RegisterPage() {
   const navigate = useNavigate();
   const [form, setForm] = useState({ email: '', password: '' });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
-
   const submit = async (e) => {
     e.preventDefault();
     setLoading(true);
@@ -23,7 +20,6 @@ export default function RegisterPage() {
       setLoading(false);
     }
   };
-
   return (
     <div className="flex min-h-screen items-center justify-center bg-[#f9fafb] px-4 py-10">
       <div className="grid w-full max-w-5xl overflow-hidden rounded-3xl bg-white shadow-sm md:grid-cols-2">

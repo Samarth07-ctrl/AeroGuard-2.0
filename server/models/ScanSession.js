@@ -1,5 +1,4 @@
 const mongoose = require('mongoose');
-
 const scanSessionSchema = new mongoose.Schema({
   sessionId:    { type: String, required: true, unique: true },
   farmerEmail:  { type: String, required: true },
@@ -20,5 +19,4 @@ const scanSessionSchema = new mongoose.Schema({
     severity: String
   }]
 }, { timestamps: true });
-
 module.exports = mongoose.model('ScanSession', scanSessionSchema);

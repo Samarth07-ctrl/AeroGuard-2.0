@@ -1,11 +1,9 @@
 const nodemailer = require('nodemailer');
-
 function buildTransport() {
   const { GMAIL_USER, GMAIL_APP_PASSWORD } = process.env;
   if (!GMAIL_USER || !GMAIL_APP_PASSWORD) {
     return null;
   }
-
   return nodemailer.createTransport({
     service: 'gmail',
     auth: {
@@ -14,13 +12,11 @@ function buildTransport() {
     }
   });
 }
-
 async function sendOtpEmail(toEmail, otp) {
   const transporter = buildTransport();
   if (!transporter) {
     throw new Error('Email service not configured. Set GMAIL_USER and GMAIL_APP_PASSWORD in .env');
   }
-
   const info = await transporter.sendMail({
     from: process.env.GMAIL_FROM || process.env.GMAIL_USER,
     to: toEmail,
@@ -37,8 +33,6 @@ async function sendOtpEmail(toEmail, otp) {
       </div>
     `
   });
-
   return info;
 }
-
 module.exports = { sendOtpEmail };

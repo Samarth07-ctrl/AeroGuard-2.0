@@ -1,39 +1,74 @@
 # Dependencies
 node_modules/
+.pnp
+.pnp.js
 
-# Environment variables
+# Environment variables & secrets
 .env
+.env.*
+!.env.example
 
-# Build outputs
+# Build outputs & caches
 build/
+dist/
 out/
+.cache/
+*.cache
 
-# Dataset (large files)
+# Python environment & cache
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+.venv/
+ENV/
+.pytest_cache/
+
+# Dataset & large archives
 dataset/
+*.zip
+*.tar
+*.tar.gz
+*.7z
+
+# Temporary / validation runs
+AeroGuardEngine/runs/detect/val*/
 
 # vcpkg dependencies
 vcpkg/
 
-# IDE settings
+# IDE & Editor settings
 .vscode/
+.idea/
+*.sublime-project
+*.sublime-workspace
 
 # Logs
 *.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
 
 # Compiled binaries
 *.exe
 *.dll
 *.so
+*.dylib
+*.obj
+*.o
 
 # OS files
 .DS_Store
 Thumbs.db
+desktop.ini
 
 # Server uploads (user-uploaded images/zips)
 server/uploads/
 
-# Debug scripts
+# Scratch & cleanup scripts
+strip_comments.js
+server/strip_comments.js
 server/debug_mongo.js
-
-# Test zip files
-AeroGuardEngine/Plant-disease-1/test/images/ZIP3.zip

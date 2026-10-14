@@ -6,10 +6,8 @@ private:
     std::string serverUrl;
 
 public:
-    // Initialize with your Node.js server endpoint
     WebhookClient(const std::string& url);
 
-    // The payload function perfectly matched to our Flutter App UI
     bool sendAlert(const std::string& sessionId,
                    const std::string& farmerId,
                    const std::string& disease, 

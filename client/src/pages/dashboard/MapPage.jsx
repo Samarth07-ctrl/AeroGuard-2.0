@@ -3,18 +3,15 @@ import { MapContainer, Marker, Popup, Rectangle, TileLayer, Tooltip, useMap } fr
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import { Activity, Droplets, MapPin, RefreshCw, Shield } from 'lucide-react';
-
 const API = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000/api';
 const PUNE_LAT = 18.5204;
 const PUNE_LON = 73.8567;
-
 const SEV = {
   Severe: { color: '#dc2626', label: 'CRITICAL' },
   High:   { color: '#ef4444', label: 'HIGH' },
   Medium: { color: '#f97316', label: 'MEDIUM' },
   Low:    { color: '#22c55e', label: 'LOW' },
 };
-
 const createIcon = (color) =>
   L.divIcon({
     className: '',
@@ -22,7 +19,6 @@ const createIcon = (color) =>
     iconAnchor: [9, 9],
     html: `<div style="width:10px;height:10px;border-radius:50%;background:${color};border:2px solid white;box-shadow:0 0 6px ${color}60;margin:4px;"></div>`,
   });
-
 // Auto-fit map to all cluster bounds
 function FitAll({ clusters }) {
   const map = useMap();
@@ -42,7 +38,6 @@ function FitAll({ clusters }) {
   }, [clusters, map]);
   return null;
 }
-
 export default function MapPage() {
   const [clusters, setClusters] = useState([]);
   const [humidity, setHumidity] = useState(null);
@@ -51,7 +46,6 @@ export default function MapPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [lastRefresh, setLastRefresh] = useState(Date.now());
-
   const loadClusters = useCallback(async () => {
     setLoading(true);
     setError('');
@@ -60,13 +54,11 @@ export default function MapPage() {
         headers: { Authorization: `Bearer ${localStorage.getItem('adminToken') || ''}` },
       });
       const sessions = await sessionsRes.json();
-
       if (!Array.isArray(sessions) || sessions.length === 0) {
         setClusters([]);
         setLoading(false);
         return;
       }
-
       // Group sessions by farmerEmail to avoid duplicate cluster requests
       const farmerMap = {};
       for (const s of sessions) {
@@ -80,32 +72,27 @@ export default function MapPage() {
             !name.includes('no anomalies');
         });
         if (!hasReal) continue;
-
         const email = s.farmerEmail || s.farmerId?.email || '';
         if (!email) continue;
         if (!farmerMap[email]) {
           farmerMap[email] = s.sessionId; // use one sessionId per farmer for the request
         }
       }
-
       const uniqueFarmers = Object.entries(farmerMap);
       if (uniqueFarmers.length === 0) {
         setClusters([]);
         setLoading(false);
         return;
       }
-
       const results = await Promise.allSettled(
         uniqueFarmers.map(([email, sid]) =>
           fetch(`${API}/clusters/${sid}?email=${encodeURIComponent(email)}`).then((r) => r.json())
         )
       );
-
       let allClusters = [];
       let latestHumidity = null;
       let latestBuffer = null;
       let detectionCount = 0;
-
       for (const result of results) {
         if (result.status === 'fulfilled' && result.value?.clusters) {
           allClusters = allClusters.concat(result.value.clusters);
@@ -116,7 +103,6 @@ export default function MapPage() {
           }
         }
       }
-
       setClusters(allClusters);
       setHumidity(latestHumidity);
       setHumidityBuffer(latestBuffer);
@@ -128,16 +114,11 @@ export default function MapPage() {
       setLoading(false);
     }
   }, []);
-
-  // Load on mount and whenever lastRefresh changes
   useEffect(() => {
     loadClusters();
   }, [loadClusters, lastRefresh]);
-
-  // Auto-refresh every 30s so batch results appear without manual reload
   useEffect(() => {
     const iv = setInterval(() => setLastRefresh(Date.now()), 30000);
-    // Also refresh immediately when any batch completes (cross-component event)
     const onBatchComplete = () => setLastRefresh(Date.now());
     window.addEventListener('aerovision:batch-complete', onBatchComplete);
     return () => {
@@ -145,18 +126,16 @@ export default function MapPage() {
       window.removeEventListener('aerovision:batch-complete', onBatchComplete);
     };
   }, []);
-
   return (
     <div className="space-y-4">
-      {/* Header */}
+      {}
       <div>
         <h1 className="text-2xl font-bold text-gray-900">Global Tactical Map</h1>
         <p className="mt-1 text-sm text-gray-600">
           Precision infection zones and adaptive quarantine perimeters across all farmer sessions.
         </p>
       </div>
-
-      {/* Stats bar */}
+      {}
       <div className="flex flex-wrap items-center gap-3">
         {humidity !== null && (
           <div className="flex items-center gap-2 rounded-xl border border-blue-100 bg-blue-50 px-3 py-2 text-sm text-blue-800">
@@ -190,11 +169,9 @@ export default function MapPage() {
           Refresh
         </button>
       </div>
-
       {error && (
         <div className="rounded-xl border border-red-200 bg-red-50 p-3 text-sm text-red-700">{error}</div>
       )}
-
       {/* Map */}
       <div className="h-[560px] overflow-hidden rounded-2xl border border-gray-200 shadow-sm">
         <MapContainer
@@ -209,17 +186,14 @@ export default function MapPage() {
             attribution="&copy; Google Maps"
             maxZoom={20}
           />
-
           {clusters.length > 0 && <FitAll clusters={clusters} />}
-
           {clusters.map((cluster, idx) => {
             const iz = cluster.infectionZone;
             const qp = cluster.quarantinePerimeter;
             const sev = SEV[cluster.worstSeverity] || SEV.High;
-
             return (
               <React.Fragment key={`global-cluster-${idx}`}>
-                {/* Quarantine perimeter — outer dashed orange */}
+                {}
                 <Rectangle
                   bounds={[[qp.minLat, qp.minLon], [qp.maxLat, qp.maxLon]]}
                   pathOptions={{
@@ -236,7 +210,6 @@ export default function MapPage() {
                     </span>
                   </Tooltip>
                 </Rectangle>
-
                 {/* Infection zone — inner solid red */}
                 <Rectangle
                   bounds={[[iz.minLat, iz.minLon], [iz.maxLat, iz.maxLon]]}
@@ -272,8 +245,7 @@ export default function MapPage() {
                     </span>
                   </Tooltip>
                 </Rectangle>
-
-                {/* Individual detection markers */}
+                {}
                 {cluster.points.map((pt, pi) => (
                   <Marker
                     key={`global-pt-${idx}-${pi}`}
@@ -294,8 +266,7 @@ export default function MapPage() {
               </React.Fragment>
             );
           })}
-
-          {/* Empty state overlay */}
+          {}
           {!loading && clusters.length === 0 && (
             <div style={{
               position: 'absolute', inset: 0, zIndex: 1000,
@@ -316,8 +287,7 @@ export default function MapPage() {
           )}
         </MapContainer>
       </div>
-
-      {/* Legend */}
+      {}
       <div className="flex items-center gap-6 px-1">
         <div className="flex items-center gap-2">
           <div className="h-3 w-6 rounded-sm bg-red-500/50 border border-red-500" />

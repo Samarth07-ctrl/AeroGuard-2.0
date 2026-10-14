@@ -1,14 +1,6 @@
-/* eslint-disable react-refresh/only-export-components */
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
-
 const STORAGE_KEY = 'aerovision_active_farmers';
 const FarmerContext = createContext(null);
-
-/**
- * Persistent farmer workspace manager.
- * Stores verified farmer sessions in localStorage so navigation
- * never loses them.
- */
 export function FarmerProvider({ children }) {
   const [activeFarmers, setActiveFarmers] = useState(() => {
     try {
@@ -18,19 +10,11 @@ export function FarmerProvider({ children }) {
       return [];
     }
   });
-
-  // Sync to localStorage on every change
   useEffect(() => {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(activeFarmers));
   }, [activeFarmers]);
-
-  /**
-   * Called after a successful OTP verification.
-   * Adds a new farmer workspace entry (deduplicates by sessionId).
-   */
-  const addFarmer = useCallback((email, sessionId, extra = {}) => {
+    const addFarmer = useCallback((email, sessionId, extra = {}) => {
     setActiveFarmers((prev) => {
-      // Don't add duplicate sessions
       if (prev.some((f) => f.sessionId === sessionId)) return prev;
       return [
         ...prev,
@@ -44,31 +28,18 @@ export function FarmerProvider({ children }) {
       ];
     });
   }, []);
-
-  /**
-   * Remove a farmer workspace by sessionId.
-   */
-  const removeFarmer = useCallback((sessionId) => {
+    const removeFarmer = useCallback((sessionId) => {
     setActiveFarmers((prev) => prev.filter((f) => f.sessionId !== sessionId));
   }, []);
-
-  /**
-   * Get a single farmer by sessionId.
-   */
-  const getFarmer = useCallback(
+    const getFarmer = useCallback(
     (sessionId) => activeFarmers.find((f) => f.sessionId === sessionId) || null,
     [activeFarmers]
   );
-
-  /**
-   * Update fields on an existing farmer entry (e.g. appLinkStatus after QR scan).
-   */
-  const updateFarmer = useCallback((sessionId, patch) => {
+    const updateFarmer = useCallback((sessionId, patch) => {
     setActiveFarmers((prev) =>
       prev.map((f) => (f.sessionId === sessionId ? { ...f, ...patch } : f))
     );
   }, []);
-
   const value = useMemo(
     () => ({
       activeFarmers,
@@ -79,10 +50,8 @@ export function FarmerProvider({ children }) {
     }),
     [activeFarmers, addFarmer, removeFarmer, getFarmer, updateFarmer]
   );
-
   return <FarmerContext.Provider value={value}>{children}</FarmerContext.Provider>;
 }
-
 export function useFarmers() {
   const ctx = useContext(FarmerContext);
   if (!ctx) {

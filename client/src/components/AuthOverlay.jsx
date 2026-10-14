@@ -1,4 +1,3 @@
-/* eslint-disable no-unused-vars */
 import React, { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import axios from 'axios';
@@ -6,9 +5,7 @@ import {
   Mail, ShieldCheck, Loader2, Lock,
   Fingerprint, Wifi, ArrowRight
 } from 'lucide-react';
-
 const API = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000/api';
-
 export default function AuthOverlay({ onVerified }) {
   const [step, setStep] = useState(1);
   const [email, setEmail] = useState('');
@@ -18,12 +15,10 @@ export default function AuthOverlay({ onVerified }) {
   const [error, setError] = useState('');
   const [emailValid, setEmailValid] = useState(null);
   const otpRefs = [useRef(), useRef(), useRef(), useRef()];
-
   useEffect(() => {
     if (email === '') { setEmailValid(null); return; }
     setEmailValid(/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email));
   }, [email]);
-
   // ── Request OTP ──
   const handleRequestSession = async (e) => {
     e.preventDefault();
@@ -41,8 +36,6 @@ export default function AuthOverlay({ onVerified }) {
       setLoading(false);
     }
   };
-
-  // ── OTP input handlers ──
   const handleOtpChange = (i, val) => {
     if (!/^\d?$/.test(val)) return;
     const next = [...otp];
@@ -50,11 +43,9 @@ export default function AuthOverlay({ onVerified }) {
     setOtp(next);
     if (val && i < 3) otpRefs[i + 1].current?.focus();
   };
-
   const handleOtpKeyDown = (i, e) => {
     if (e.key === 'Backspace' && !otp[i] && i > 0) otpRefs[i - 1].current?.focus();
   };
-
   const handleOtpPaste = (e) => {
     const paste = e.clipboardData.getData('text').replace(/\D/g, '').slice(0, 4);
     if (paste.length === 4) {
@@ -62,7 +53,6 @@ export default function AuthOverlay({ onVerified }) {
       otpRefs[3].current?.focus();
     }
   };
-
   // ── Verify OTP ──
   const handleVerifyUplink = async (e) => {
     e.preventDefault();
@@ -81,7 +71,6 @@ export default function AuthOverlay({ onVerified }) {
       setLoading(false);
     }
   };
-
   // ── Animation variants ──
   const cardV = {
     hidden: { opacity: 0, y: 30, scale: 0.96 },
@@ -92,16 +81,13 @@ export default function AuthOverlay({ onVerified }) {
     center: { opacity: 1, x: 0, transition: { duration: 0.4, ease: [0.16, 1, 0.3, 1] } },
     exit: { opacity: 0, x: -50, transition: { duration: 0.25 } },
   };
-
   const borderColor = emailValid === null
     ? 'border-white/[0.08]'
     : emailValid ? 'border-cyan-500/40' : 'border-rose-500/40';
-
   return (
     <motion.div variants={cardV} initial="hidden" animate="visible" className="w-full max-w-[440px]">
       <div className="card-glass rounded-2xl overflow-hidden shadow-2xl shadow-black/50 relative noise">
-
-        {/* ── Header bar ── */}
+        {}
         <div className="px-6 py-4 flex items-center justify-between border-b border-white/[0.04]">
           <div className="flex items-center gap-2.5">
             <ShieldCheck className="w-5 h-5 text-cyan-400" />
@@ -131,11 +117,9 @@ export default function AuthOverlay({ onVerified }) {
             )}
           </div>
         </div>
-
-        {/* ── Body ── */}
+        {}
         <div className="px-6 pt-6 pb-2">
-
-          {/* Icon + Title */}
+          {}
           <div className="text-center mb-6">
             <motion.div
               initial={{ scale: 0, rotate: -10 }}
@@ -154,8 +138,7 @@ export default function AuthOverlay({ onVerified }) {
                 : <>Code dispatched to <span className="text-cyan-400 font-mono text-[11px]">{email}</span></>}
             </p>
           </div>
-
-          {/* Error */}
+          {}
           <AnimatePresence>
             {error && (
               <motion.div
@@ -169,8 +152,7 @@ export default function AuthOverlay({ onVerified }) {
               </motion.div>
             )}
           </AnimatePresence>
-
-          {/* Steps */}
+          {}
           <AnimatePresence mode="wait">
             {step === 1 ? (
               <motion.form key="s1" variants={stepV} initial="enter" animate="center" exit="exit" onSubmit={handleRequestSession} className="space-y-4">
@@ -228,8 +210,7 @@ export default function AuthOverlay({ onVerified }) {
             )}
           </AnimatePresence>
         </div>
-
-        {/* Footer */}
+        {}
         <div className="px-6 py-3.5 mt-2 border-t border-white/[0.03] flex items-center justify-center gap-2">
           <ShieldCheck className="w-3 h-3 text-zinc-700" />
           <span className="text-[10px] text-zinc-700 font-mono tracking-wider">ZERO-TRUST PROTOCOL ACTIVE</span>

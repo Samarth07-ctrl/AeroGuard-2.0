@@ -7,10 +7,7 @@ struct GPSCoordinate {
 
 class GeoMath {
 public:
-    // Initialize with mock EXIF drone location variables
     GeoMath(double center_lat, double center_lon, double altitude_m, double fov_degrees);
-
-    // Converts pixel coordinates from the image array into a GPS latitude and longitude
     GPSCoordinate pixelToGPS(int x, int y, int image_width, int image_height);
 
 private:

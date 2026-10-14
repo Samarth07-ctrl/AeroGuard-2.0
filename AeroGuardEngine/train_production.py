@@ -13,11 +13,9 @@ def main():
         print(f"Error: {data_yaml_path} not found. Please ensure the path is correct.")
         return
 
-    # Initialize YOLO11n
     print("[1] Initializing YOLO11n architecture...")
     model = YOLO('yolo11n.pt') 
 
-    # Run the training
     print("[2] Starting Production Training (100 Epochs, Patience 15, Batch 16)...")
     results = model.train(
         data=os.path.abspath(data_yaml_path),
@@ -26,15 +24,13 @@ def main():
         imgsz=640,
         batch=16,
         plots=False,
-        name="production_run" # Save to runs/detect/production_run
+        name="production_run"
     )
 
-    # Export to ONNX
     print("\n[3] Exporting trained model to ONNX format...")
     exported_path = model.export(format='onnx')
     
     if exported_path and os.path.exists(exported_path):
-        # Move it to the root AeroGuardEngine directory
         target_path = os.path.join(os.getcwd(), "best.onnx")
         if os.path.exists(target_path):
             os.remove(target_path)

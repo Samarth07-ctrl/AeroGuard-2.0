@@ -10,14 +10,12 @@ import FarmerWorkspace from './pages/dashboard/FarmerWorkspace';
 import HistoryPage from './pages/dashboard/HistoryPage';
 import MapPage from './pages/dashboard/MapPage';
 import WeatherPage from './pages/dashboard/WeatherPage';
-
 function App() {
   return (
     <Routes>
       <Route path="/" element={<LandingPage />} />
       <Route path="/login" element={<LoginPage />} />
       <Route path="/register" element={<RegisterPage />} />
-
       <Route element={<ProtectedRoute />}>
         <Route path="/dashboard" element={<DashboardLayout />}>
           <Route index element={<DashboardHome />} />
@@ -28,10 +26,8 @@ function App() {
           <Route path="workspace/:sessionId" element={<FarmerWorkspace />} />
         </Route>
       </Route>
-
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
   );
 }
-
 export default App;

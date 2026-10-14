@@ -1,5 +1,4 @@
 import { Link } from 'react-router-dom';
-
 export default function LandingPage() {
   return (
     <div className="min-h-screen bg-[#f9fafb] text-gray-900">
@@ -18,7 +17,6 @@ export default function LandingPage() {
           </div>
         </div>
       </nav>
-
       <main className="mx-auto grid max-w-6xl gap-10 px-6 py-16 md:grid-cols-2 md:py-20">
         <div className="space-y-6">
           <p className="inline-flex rounded-full bg-green-50 px-4 py-1 text-xs font-semibold uppercase tracking-wide text-green-700">
@@ -56,7 +54,6 @@ export default function LandingPage() {
             </div>
           </div>
         </div>
-
         <div className="space-y-4">
           <div className="overflow-hidden rounded-3xl bg-white shadow-sm transition hover:shadow-md">
             <img
@@ -71,7 +68,6 @@ export default function LandingPage() {
               </p>
             </div>
           </div>
-
           <div className="grid gap-3 sm:grid-cols-2">
             <div className="rounded-3xl bg-white p-4 shadow-sm transition hover:shadow-md">
               <p className="text-sm font-semibold text-gray-900">Secure Admin Access</p>

@@ -3,18 +3,13 @@ import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import { ShieldCheck, Radio, Activity, AlertTriangle, Crosshair, Bell } from 'lucide-react';
-
 const API = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000/api';
-
-// ── Severity Config ──
 const SEV_CONFIG = {
   Severe:  { color: '#dc2626', bg: '#dc262620', label: 'CRITICAL', glow: '#dc262680' },
   High:    { color: '#f97316', bg: '#f9731620', label: 'HIGH',     glow: '#f9731680' },
   Medium:  { color: '#eab308', bg: '#eab30820', label: 'MEDIUM',   glow: '#eab30880' },
   Low:     { color: '#22c55e', bg: '#22c55e20', label: 'LOW',      glow: '#22c55e80' },
 };
-
-// ── Custom Leaflet marker icons ──
 const createDiseaseIcon = (severity) => {
   const sev = SEV_CONFIG[severity] || SEV_CONFIG.High;
   return L.divIcon({
@@ -31,7 +26,6 @@ const createDiseaseIcon = (severity) => {
     `
   });
 };
-
 // ── Component to recenter map when alerts update ──
 function MapRecenter({ center }) {
   const map = useMap();
@@ -40,14 +34,12 @@ function MapRecenter({ center }) {
   }, [center, map]);
   return null;
 }
-
 export default function DroneDashboard() {
   const [alerts, setAlerts] = useState([]);
   const [selectedAlert, setSelectedAlert] = useState(null);
   const [mapCenter, setMapCenter] = useState(null);
   const [isLive] = useState(true);
   const [activeSessionId, setActiveSessionId] = useState(() => localStorage.getItem('activeSessionId') || '');
-
   useEffect(() => {
     const refreshSession = () => {
       setActiveSessionId(localStorage.getItem('activeSessionId') || '');
@@ -60,20 +52,16 @@ export default function DroneDashboard() {
       clearInterval(interval);
     };
   }, []);
-
-  // ── Poll GET /api/alerts every 3 seconds (scoped by active session) ──
   useEffect(() => {
     if (!activeSessionId) {
       return;
     }
-
     const fetchAlerts = async () => {
       try {
         const res = await fetch(`${API}/alerts?sessionId=${encodeURIComponent(activeSessionId)}`);
         const data = await res.json();
         if (Array.isArray(data)) {
           setAlerts((prev) => {
-            // Only update center if we got new alerts
             if (data.length > prev.length && data.length > 0) {
               const latest = data[data.length - 1];
               setMapCenter([latest.lat, latest.long]);
@@ -85,19 +73,14 @@ export default function DroneDashboard() {
         console.error('Alert poll error:', err);
       }
     };
-
-    fetchAlerts(); // Initial fetch
+    fetchAlerts(); 
     const interval = setInterval(fetchAlerts, 3000);
     return () => clearInterval(interval);
   }, [activeSessionId]);
-
-  // Default center (Pune, India — matches our EXIF injection)
   const defaultCenter = alerts.length > 0 ? [alerts[0].lat, alerts[0].long] : [18.5204, 73.8567];
-
   return (
     <div style={{ display: 'flex', flexDirection: 'column', height: '100vh', background: '#0a0a0a', color: '#e4e4e7', fontFamily: "'Inter', sans-serif" }}>
-
-      {/* ══════ Top Nav Bar ══════ */}
+      {}
       <header style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 20px', borderBottom: '1px solid rgba(255,255,255,0.05)', background: 'rgba(10,10,10,0.95)', backdropFilter: 'blur(12px)', zIndex: 1000 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
           <ShieldCheck size={20} color="#06b6d4" />
@@ -119,11 +102,9 @@ export default function DroneDashboard() {
           </div>
         </div>
       </header>
-
-      {/* ══════ Main Content ══════ */}
+      {}
       <div style={{ flex: 1, display: 'flex', minHeight: 0 }}>
-
-        {/* ── LEFT: Alert List Panel ── */}
+        {}
         <div style={{ width: '340px', borderRight: '1px solid rgba(255,255,255,0.04)', display: 'flex', flexDirection: 'column', background: 'rgba(10,10,10,0.6)', backdropFilter: 'blur(8px)' }}>
           <div style={{ padding: '16px 16px 12px', borderBottom: '1px solid rgba(255,255,255,0.04)' }}>
             <h2 style={{ fontSize: '13px', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '8px', margin: 0 }}>
@@ -134,7 +115,6 @@ export default function DroneDashboard() {
               {alerts.length === 0 ? 'Waiting for C++ Engine...' : `${alerts.length} hotspots detected`}
             </p>
           </div>
-
           <div style={{ flex: 1, overflowY: 'auto', padding: '8px' }}>
             {alerts.length === 0 && (
               <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100%', opacity: 0.4 }}>
@@ -188,10 +168,9 @@ export default function DroneDashboard() {
             })}
           </div>
         </div>
-
-        {/* ── RIGHT: Leaflet Satellite Map ── */}
+        {}
         <div style={{ flex: 1, position: 'relative' }}>
-          {/* Hotspot Badge */}
+          {}
           {alerts.length > 0 && (
             <div style={{ position: 'absolute', top: '16px', left: '16px', zIndex: 1000, display: 'flex', gap: '8px' }}>
               <div style={{ background: 'rgba(10,10,10,0.85)', backdropFilter: 'blur(12px)', border: '1px solid rgba(255,255,255,0.08)', padding: '6px 12px', borderRadius: '8px', display: 'flex', alignItems: 'center', gap: '6px' }}>
@@ -204,7 +183,6 @@ export default function DroneDashboard() {
               </div>
             </div>
           )}
-
           <MapContainer
             center={defaultCenter}
             zoom={16}
@@ -218,7 +196,6 @@ export default function DroneDashboard() {
               maxZoom={20}
             />
             {mapCenter && <MapRecenter center={mapCenter} />}
-
             {alerts.map((alert, i) => (
               <Marker
                 key={i}

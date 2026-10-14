@@ -11,7 +11,6 @@ WebhookClient::WebhookClient(const std::string& url) {
 
 bool WebhookClient::sendAlert(const std::string& sessionId, const std::string& farmerId, const std::string& disease, double lat, double lon, const std::string& severity, const std::string& pesticide, float confidence) {
     
-    // 1. Serialize the exact JSON structure our Node.js/Flutter stack expects
     json payload = {
         {"type", "DISEASE_ALERT"},
         {"sessionId", sessionId},
@@ -24,12 +23,10 @@ bool WebhookClient::sendAlert(const std::string& sessionId, const std::string& f
         {"confidence", confidence}
     };
 
-    // 2. Fire the POST request to the Node.js Server
     cpr::Response r = cpr::Post(cpr::Url{serverUrl},
                                 cpr::Header{{"Content-Type", "application/json"}},
                                 cpr::Body{payload.dump()});
 
-    // 3. Error Handling for the Hackathon Demo
     if (r.status_code == 200 || r.status_code == 201) {
         std::cout << "[SUCCESS] Alert pushed to Node.js! FCM triggered for Farmer ID: " << farmerId << "\n";
         return true;
